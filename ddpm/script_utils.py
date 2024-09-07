@@ -24,6 +24,12 @@ def get_transform():
             return 2 * sample - 1
 
     return torchvision.transforms.Compose([
+        # Resize to 32x32
+        torchvision.transforms.Resize((32, 32)),
+        # To 3 rgb
+        torchvision.transforms.Grayscale(num_output_channels=3),
+
+        # Old code
         torchvision.transforms.ToTensor(),
         RescaleChannels(),
     ])

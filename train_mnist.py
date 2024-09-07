@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import os
 import torch
 import wandb
 
@@ -27,7 +28,7 @@ def main():
 
             run = wandb.init(
                 project=args.project_name,
-                entity='treaptofun',
+                entity='s0pex-university-of-cologne',
                 config=vars(args),
                 name=args.run_name,
             )
@@ -35,15 +36,15 @@ def main():
 
         batch_size = args.batch_size
 
-        train_dataset = datasets.CIFAR10(
-            root='./cifar_train',
+        train_dataset = datasets.MNIST(
+            root='./mnist_train',
             train=True,
             download=True,
             transform=script_utils.get_transform(),
         )
 
-        test_dataset = datasets.CIFAR10(
-            root='./cifar_test',
+        test_dataset = datasets.MNIST(
+            root='./mnist_test',
             train=False,
             download=True,
             transform=script_utils.get_transform(),
@@ -139,9 +140,9 @@ def create_argparser():
         log_to_wandb=True,
         log_rate=1000,
         checkpoint_rate=1000,
-        log_dir="~/ddpm_logs",
         project_name=None,
         run_name=run_name,
+        log_dir=f"./ddpm_logs/{run_name}",
 
         model_checkpoint=None,
         optim_checkpoint=None,
@@ -151,6 +152,8 @@ def create_argparser():
 
         device=device,
     )
+    # Create default dir if not exist
+    os.makedirs(defaults['log_dir'], exist_ok=True)
     defaults.update(script_utils.diffusion_defaults())
 
     parser = argparse.ArgumentParser()

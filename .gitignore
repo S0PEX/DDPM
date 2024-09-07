@@ -2,3 +2,11 @@ ddpm_env/
 .idea/
 .vscode/
 *.egg-info/
+cifar_train/
+cifar_test/
+mnist_train/
+mnist_test/
+ddpm_logs/
+__pycache__
+*.log
+wandb/
