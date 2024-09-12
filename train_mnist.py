@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import os
+import sys
 import torch
 import wandb
 
@@ -132,9 +133,12 @@ def main():
 def create_argparser():
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     run_name = datetime.datetime.now().strftime("ddpm-%Y-%m-%d-%H-%M")
-    defaults = dict(
+    args = dict(
+        img_size=28,
+        img_channels=1,
+
         learning_rate=2e-4,
-        batch_size=128,
+        batch_size=256,
         iterations=800000,
 
         log_to_wandb=True,
@@ -142,7 +146,7 @@ def create_argparser():
         checkpoint_rate=1000,
         project_name=None,
         run_name=run_name,
-        log_dir=f"./ddpm_logs/{run_name}",
+        log_dir=f"./ddpm_logs/{sys.argv[0]}-{run_name}",
 
         model_checkpoint=None,
         optim_checkpoint=None,
@@ -153,11 +157,12 @@ def create_argparser():
         device=device,
     )
     # Create default dir if not exist
-    os.makedirs(defaults['log_dir'], exist_ok=True)
-    defaults.update(script_utils.diffusion_defaults())
+    os.makedirs(args['log_dir'], exist_ok=True)
+    default_args = script_utils.diffusion_defaults()
+    args = {**default_args, **args}
 
     parser = argparse.ArgumentParser()
-    script_utils.add_dict_to_argparser(parser, defaults)
+    script_utils.add_dict_to_argparser(parser, args)
     return parser
 
 

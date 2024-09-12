@@ -62,8 +62,8 @@ class Downsample(nn.Module):
 
     def __init__(self, in_channels):
         super().__init__()
-
-        self.downsample = nn.Conv2d(in_channels, in_channels, 3, stride=2, padding=1)
+        # normal is 3 but for 28x28 28/3 is 9.XXX so we need to use 2
+        self.downsample = nn.Conv2d(in_channels, in_channels, 2, stride=2, padding=1)
     
     def forward(self, x, time_emb, y):
         if x.shape[2] % 2 == 1:
@@ -92,7 +92,7 @@ class Upsample(nn.Module):
 
         self.upsample = nn.Sequential(
             nn.Upsample(scale_factor=2, mode="nearest"),
-            nn.Conv2d(in_channels, in_channels, 3, padding=1),
+            nn.Conv2d(in_channels, in_channels, 2, padding=1),
         )
     
     def forward(self, x, time_emb, y):
@@ -116,7 +116,7 @@ class AttentionBlock(nn.Module):
         
         self.in_channels = in_channels
         self.norm = get_norm(norm, in_channels, num_groups)
-        self.to_qkv = nn.Conv2d(in_channels, in_channels * 3, 1)
+        self.to_qkv = nn.Conv2d(in_channels, in_channels * 2, 1)
         self.to_out = nn.Conv2d(in_channels, in_channels, 1)
 
     def forward(self, x):
@@ -175,12 +175,12 @@ class ResidualBlock(nn.Module):
         self.activation = activation
 
         self.norm_1 = get_norm(norm, in_channels, num_groups)
-        self.conv_1 = nn.Conv2d(in_channels, out_channels, 3, padding=1)
+        self.conv_1 = nn.Conv2d(in_channels, out_channels, 2, padding=1)
 
         self.norm_2 = get_norm(norm, out_channels, num_groups)
         self.conv_2 = nn.Sequential(
             nn.Dropout(p=dropout),
-            nn.Conv2d(out_channels, out_channels, 3, padding=1),
+            nn.Conv2d(out_channels, out_channels, 2, padding=1),
         )
 
         self.time_bias = nn.Linear(time_emb_dim, out_channels) if time_emb_dim is not None else None
@@ -264,7 +264,7 @@ class UNet(nn.Module):
             nn.Linear(time_emb_dim, time_emb_dim),
         ) if time_emb_dim is not None else None
     
-        self.init_conv = nn.Conv2d(img_channels, base_channels, 3, padding=1)
+        self.init_conv = nn.Conv2d(img_channels, base_channels, 2, padding=1)
 
         self.downs = nn.ModuleList()
         self.ups = nn.ModuleList()
@@ -343,7 +343,7 @@ class UNet(nn.Module):
         assert len(channels) == 0
         
         self.out_norm = get_norm(norm, base_channels, num_groups)
-        self.out_conv = nn.Conv2d(base_channels, img_channels, 3, padding=1)
+        self.out_conv = nn.Conv2d(base_channels, img_channels, 2, padding=1)
     
     def forward(self, x, time=None, y=None):
         ip = self.initial_pad

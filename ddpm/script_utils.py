@@ -24,12 +24,6 @@ def get_transform():
             return 2 * sample - 1
 
     return torchvision.transforms.Compose([
-        # Resize to 32x32
-        torchvision.transforms.Resize((32, 32)),
-        # To 3 rgb
-        torchvision.transforms.Grayscale(num_output_channels=3),
-
-        # Old code
         torchvision.transforms.ToTensor(),
         RescaleChannels(),
     ])
@@ -64,6 +58,8 @@ def add_dict_to_argparser(parser, default_dict):
 
 def diffusion_defaults():
     defaults = dict(
+        img_size=32,
+        img_channels=3,
         num_timesteps=1000,
         schedule="linear",
         loss_type="l2",
@@ -93,7 +89,7 @@ def get_diffusion_from_args(args):
     }
 
     model = UNet(
-        img_channels=3,
+        img_channels=args.img_channels,
 
         base_channels=args.base_channels,
         channel_mults=args.channel_mults,
@@ -117,7 +113,7 @@ def get_diffusion_from_args(args):
         )
 
     diffusion = GaussianDiffusion(
-        model, (32, 32), 3, 10,
+        model, (args.img_size, args.img_size), args.img_channels, 10,
         betas,
         ema_decay=args.ema_decay,
         ema_update_rate=args.ema_update_rate,
